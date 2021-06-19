@@ -1,13 +1,16 @@
 const express = require('express');
 const routes = express.Router();
 
-const cveService = require('./services/cve');
-const cvssService = require('./services/cvss');
+const CvssController = require('./controller/CvssController');
+const CveController = require('./controller/CveController');
 
 routes.route('/cve/:id')
-  .get(cveService.getCveById);
+  .get(CveController.getCveById);
 
 routes.route('/cvss')
-  .post(cvssService.calculateCvss);
+  .post(CvssController.calculateCvss);
+
+routes.route('/cvssByCVE/:id')
+  .get(CvssController.calculateCvssByCVE);
 
 module.exports = routes;
