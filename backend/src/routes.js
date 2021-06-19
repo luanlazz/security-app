@@ -1,10 +1,9 @@
-const express = require('express')
+const express = require('express');
+const routes = express.Router();
 
-const cveService = require('./services/cve')
-
-const routes = express.Router()
+const cveService = require('./services/cve');
 
 routes.route('/cve/:id')
-  .get(cveService.getCveById)
+  .get(cveService.getCveById);
 
-module.exports = routes
+module.exports = routes;
