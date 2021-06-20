@@ -8,7 +8,7 @@ module.exports = {
       const result = await cveService.getCveById(idCve);
       res.json(result);
     } catch (e) {
-      res.status(400).send(e.message);
+      res.status(400).json({ error: e.message });
     }
   }
 };

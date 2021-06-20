@@ -9,7 +9,7 @@ module.exports = {
       const result = cvssService.calculateCvss(body);
       res.json(result);
     } catch (e) {
-      res.status(400).send(e.message);
+      res.status(400).json({ error: e.message });
     }
   },
 
@@ -21,7 +21,7 @@ module.exports = {
       const result = cvssService.calculateCvss({accumulator: `/${cve.cvssVector}` || ''});
       res.json(result);
     } catch (e) {
-      res.status(400).send(e.message);
+      res.status(400).json({ error: e.message });
     }
   }
 };

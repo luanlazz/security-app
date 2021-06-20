@@ -3,7 +3,7 @@ const axios = require('axios');
 module.exports = {
   async getCveById(idCve) {
     // noinspection RegExpSingleCharAlternation
-    const cod = idCve.replace(/(^CVE)( |-)([0-9]{4})( |-)([0-9]{4,})/gm, '$1-$3-$5');
+    const cod = idCve.toUpperCase().replace(/(^CVE)( |-)([0-9]{4})( |-)([0-9]{4,})/gm, '$1-$3-$5');
 
     if (!/^CVE-[0-9]{4}-[0-9]{4,}/gm.test(cod)) {
       throw new Error('Código inválido, por favor confira e tente novamente.');
