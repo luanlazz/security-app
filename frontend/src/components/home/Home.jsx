@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import CVSSComponent from '../cvss/cvssComponent'
 import api from '../../services/api'
 
 import './style.scss'
@@ -31,21 +32,11 @@ const Home = () => {
 
 	const handleCVSS = (event) => {
 		const split = event.target.id.split('_')
-		const atribute = split[0]
-		const value = split[1]
 
 		setCvss((old) => ({
 			...old,
-			[atribute]: value
+			[split[0]]: split[1]
 		}))
-	}
-
-	const isSelected = (event) => {
-		console.log(`event`, event.target)
-		const split = event.target.id.split('_')
-		const value = split[1]
-
-		return cvss.AV.toString() === value
 	}
 
 	const getCveData = async (e) => {
@@ -59,6 +50,14 @@ const Home = () => {
 			setFetching(false)
 
 			setCveData(res.data)
+
+			res.data.cvssVector
+				.toString()
+				.split('/')
+				.forEach((element) => {
+					const split = element.split(':')
+					setCvss((old) => ({ ...old, [split[0]]: split[1] }))
+				})
 		} catch (error) {
 			setErrorMessage(error.response.data.error)
 			setFetching(false)
@@ -118,7 +117,7 @@ const Home = () => {
 							<ul className='flex flex-col list-disc pl-10'>
 								{cveData.references.slice(0, cveData.references.length / 2 + 1).map((link) => {
 									return (
-										<li>
+										<li key={`item-${link}`}>
 											<a href={link} target='_blank' rel='noreferrer'>
 												{link}
 											</a>
@@ -129,7 +128,7 @@ const Home = () => {
 							<ul className='flex flex-col list-disc pl-10'>
 								{cveData.references.slice(cveData.references.length / 2 + 1).map((link) => {
 									return (
-										<li>
+										<li key={`item-${link}`}>
 											<a href={link} target='_blank' rel='noreferrer'>
 												{link}
 											</a>
@@ -142,8 +141,8 @@ const Home = () => {
 				</div>
 			)}
 
-			<div className=''>
-				<div className='font-mono text-5xl'>CVSS</div>
+			<div className='flex flex-col'>
+				<div className='font-mono text-3xl'>CVSS</div>
 				<div className='font-mono py-2 text-1xl'>{cvssVector}</div>
 
 				<div className='font-mono py-2 text-2xl'>Base Score</div>
@@ -153,65 +152,10 @@ const Home = () => {
 							<div className='text-lg'>Attack Vector (AV)</div>
 
 							<div className='flex gap-2 flex-row text-sm'>
-								<input id='AV_N' type='radio' name='AV' value='N' />
-								<div
-									id='AV_N_label'
-									htmlFor='AV_N'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.AV === 'N' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Network (N)
-								</div>
-
-								<input id='AV_A' type='radio' name='AV' value='A' />
-								<div
-									id='AV_A_label'
-									htmlFor='AV_A'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.AV === 'A' ? ' text-red-700 ' : ' text-black '
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Adjacent (A)
-								</div>
-
-								<input id='AV_L' type='radio' name='AV' value='L' />
-								<div
-									id='AV_L_label'
-									htmlFor='AV_L'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.AV === 'L' ? ' text-red-700 ' : ' text-black '
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Local (L)
-								</div>
-
-								<input id='AV_P' type='radio' name='AV' value='P' />
-								<div
-									id='AV_P_label'
-									htmlFor='AV_P'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.AV === 'P' ? ' text-red-700 ' : ' text-black '
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Physical (P)
-								</div>
+								<CVSSComponent cvss={cvss} setCvss={setCvss} name='AV' value='N' label='Network' />
+								<CVSSComponent cvss={cvss} setCvss={setCvss} name='AV' value='A' label='Adjacent' />
+								<CVSSComponent cvss={cvss} setCvss={setCvss} name='AV' value='L' label='Local' />
+								<CVSSComponent cvss={cvss} setCvss={setCvss} name='AV' value='P' label='Physical' />
 							</div>
 						</div>
 
