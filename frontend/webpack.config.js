@@ -9,9 +9,10 @@ const autoprefixer = require('autoprefixer') // help tailwindcss to work
 const ImageminPlugin = require('imagemin-webpack-plugin').default
 const imageminMozjpeg = require('imagemin-mozjpeg')
 const webpack = require('webpack')
+require('dotenv').config()
 
 module.exports = (env) => {
-	const port = env.port || 3000
+	const port = env.port || 4000
 
 	return {
 		mode: 'development',
@@ -42,7 +43,7 @@ module.exports = (env) => {
 				plugins: [imageminMozjpeg({ quality: 50 })]
 			}),
 			new webpack.EnvironmentPlugin({
-				URL_BACKEND: 'http://localhost:5000/api'
+				URL_BACKEND: process.env.URL_BACKEND
 			})
 		],
 
