@@ -7,7 +7,7 @@ const CVSSComponent = ({ label, children }) => {
 			<div className='flex flex-col'>
 				<div className='text-lg'>{label}</div>
 
-				<div className='flex gap-2 flex-row text-sm'>{children}</div>
+				<div className='flex gap-2 flex-row flex-wrap text-sm '>{children}</div>
 			</div>
 		</>
 	)

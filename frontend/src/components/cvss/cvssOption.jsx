@@ -17,7 +17,7 @@ const CVSSOption = ({ cvss, setCvss, name, value, label }) => {
 			<div
 				id={`${name}_${value}_label`}
 				htmlFor={`${name}_${value}`}
-				className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
+				className={'w-2/1 text-xs flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 px-1 '.concat(
 					cvss[name] === value ? 'text-red-700' : 'text-black'
 				)}
 				onClick={handleCVSS}
