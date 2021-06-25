@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import CVSSComponent from '../cvss/cvssComponent'
+import { CVSSOption, CVSSComponent } from '../cvss'
 import api from '../../services/api'
 
 import './style.scss'
@@ -27,15 +27,6 @@ const Home = () => {
 		setForm((old) => ({
 			...old,
 			[name]: value
-		}))
-	}
-
-	const handleCVSS = (event) => {
-		const split = event.target.id.split('_')
-
-		setCvss((old) => ({
-			...old,
-			[split[0]]: split[1]
 		}))
 	}
 
@@ -143,335 +134,58 @@ const Home = () => {
 
 			<div className='flex flex-col'>
 				<div className='font-mono text-3xl'>CVSS</div>
-				<div className='font-mono py-2 text-1xl'>{cvssVector}</div>
+				<div className='font-mono py-2 text-1xl bg-white rounded-md text-black'>{cvssVector}</div>
 
 				<div className='font-mono py-2 text-2xl'>Base Score</div>
 				<div className='grid gap-8 grid-cols-2'>
 					<div id='col-1-base'>
-						<div className='flex flex-col'>
-							<div className='text-lg'>Attack Vector (AV)</div>
+						<CVSSComponent label='Attack Vector (AV)'>
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='AV' value='N' label='Network' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='AV' value='A' label='Adjacent' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='AV' value='L' label='Local' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='AV' value='P' label='Physical' />
+						</CVSSComponent>
 
-							<div className='flex gap-2 flex-row text-sm'>
-								<CVSSComponent cvss={cvss} setCvss={setCvss} name='AV' value='N' label='Network' />
-								<CVSSComponent cvss={cvss} setCvss={setCvss} name='AV' value='A' label='Adjacent' />
-								<CVSSComponent cvss={cvss} setCvss={setCvss} name='AV' value='L' label='Local' />
-								<CVSSComponent cvss={cvss} setCvss={setCvss} name='AV' value='P' label='Physical' />
-							</div>
-						</div>
+						<CVSSComponent label='Attack Complexity (AC)'>
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='AC' value='L' label='Low' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='AC' value='H' label='High' />
+						</CVSSComponent>
 
-						<div className='flex flex-col'>
-							<div className='text-lg'>Attack Complexity (AC)</div>
+						<CVSSComponent label='Privileges Required (PR)'>
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='PR' value='N' label='None' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='PR' value='L' label='Low' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='PR' value='H' label='High' />
+						</CVSSComponent>
 
-							<div className='flex gap-2 flex-row text-sm'>
-								<input id='AC_L' type='radio' name='AV' value='L' />
-								<div
-									id='AC_L_label'
-									htmlFor='AC_L'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.AC === 'L' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Low (L)
-								</div>
-
-								<input id='AC_H' type='radio' name='AV' value='H' />
-								<div
-									id='AC_H_label'
-									htmlFor='AC_H'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.AC === 'H' ? ' text-red-700 ' : ' text-black '
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									High (H)
-								</div>
-							</div>
-						</div>
-
-						<div className='flex flex-col'>
-							<div className='text-lg'>Privileges Required (PR)</div>
-
-							<div className='flex gap-2 flex-row text-sm'>
-								<input id='PR_N' type='radio' name='AV' value='N' />
-								<div
-									id='PR_N_label'
-									htmlFor='PR_N'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.PR === 'N' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									None (N)
-								</div>
-
-								<input id='PR_L' type='radio' name='AV' value='L' />
-								<div
-									id='PR_L_label'
-									htmlFor='PR_L'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.PR === 'L' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Low (L)
-								</div>
-
-								<input id='PR_H' type='radio' name='AV' value='H' />
-								<div
-									id='PR_H_label'
-									htmlFor='PR_H'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.PR === 'H' ? ' text-red-700 ' : ' text-black '
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									High (H)
-								</div>
-							</div>
-						</div>
-
-						<div className='flex flex-col'>
-							<div className='text-lg'>User Interaction (UI)</div>
-
-							<div className='flex gap-2 flex-row text-sm'>
-								<input id='UI_N' type='radio' name='AV' value='N' />
-								<div
-									id='UI_N_label'
-									htmlFor='UI_N'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.UI === 'N' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									None (N)
-								</div>
-
-								<input id='UI_R' type='radio' name='AV' value='R' />
-								<div
-									id='UI_R_label'
-									htmlFor='UI_R'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.UI === 'R' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Required (R)
-								</div>
-							</div>
-						</div>
+						<CVSSComponent label='User Interaction (UI)'>
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='UI' value='N' label='None' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='UI' value='R' label='Required' />
+						</CVSSComponent>
 					</div>
 
 					<div id='col-2-base'>
-						<div className='flex flex-col'>
-							<div className='text-lg'>Scope (S)</div>
+						<CVSSComponent label='Scope (S)'>
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='S' value='U' label='Unchanged' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='S' value='C' label='Changed' />
+						</CVSSComponent>
 
-							<div className='flex gap-2 flex-row text-sm'>
-								<input id='S_U' type='radio' name='AV' value='U' />
-								<div
-									id='S_U_label'
-									htmlFor='S_U'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.S === 'U' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Unchanged (U)
-								</div>
+						<CVSSComponent label='Confidentiality (C)'>
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='C' value='N' label='None' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='C' value='L' label='Low' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='C' value='H' label='High' />
+						</CVSSComponent>
 
-								<input id='S_C' type='radio' name='AV' value='C' />
-								<div
-									id='S_C_label'
-									htmlFor='S_C'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.S === 'C' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Changed (C)
-								</div>
-							</div>
-						</div>
+						<CVSSComponent label='Integrity (I)'>
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='I' value='N' label='None' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='I' value='L' label='Low' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='I' value='H' label='High' />
+						</CVSSComponent>
 
-						<div className='flex flex-col'>
-							<div className='text-lg'>Confidentiality (C)</div>
-
-							<div className='flex gap-2 flex-row text-sm'>
-								<input id='C_N' type='radio' name='AV' value='N' />
-								<div
-									id='C_N_label'
-									htmlFor='C_N'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.C === 'N' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									None (N)
-								</div>
-
-								<input id='C_L' type='radio' name='AV' value='L' />
-								<div
-									id='C_L_label'
-									htmlFor='C_L'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.C === 'L' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Low (L)
-								</div>
-
-								<input id='C_H' type='radio' name='AV' value='H' />
-								<div
-									id='C_H_label'
-									htmlFor='C_H'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.C === 'H' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									High (H)
-								</div>
-							</div>
-						</div>
-
-						<div className='flex flex-col'>
-							<div className='text-lg'>Integrity (I)</div>
-
-							<div className='flex gap-2 flex-row text-sm'>
-								<input id='I_N' type='radio' name='AV' value='N' />
-								<div
-									id='I_N_label'
-									htmlFor='I_N'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.I === 'N' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									None (N)
-								</div>
-
-								<input id='I_L' type='radio' name='AV' value='L' />
-								<div
-									id='I_L_label'
-									htmlFor='I_L'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.I === 'L' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Low (L)
-								</div>
-
-								<input id='I_H' type='radio' name='AV' value='H' />
-								<div
-									id='I_H_label'
-									htmlFor='I_H'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.I === 'H' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									High (H)
-								</div>
-							</div>
-						</div>
-
-						<div className='flex flex-col'>
-							<div className='text-lg'>Availability (A)</div>
-
-							<div className='flex gap-2 flex-row text-sm'>
-								<input id='A_N' type='radio' name='AV' value='N' />
-								<div
-									id='A_N_label'
-									htmlFor='A_N'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.A === 'N' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									None (N)
-								</div>
-
-								<input id='A_L' type='radio' name='AV' value='L' />
-								<div
-									id='A_L_label'
-									htmlFor='A_L'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.A === 'L' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									Low (L)
-								</div>
-
-								<input id='A_H' type='radio' name='AV' value='H' />
-								<div
-									id='A_H_label'
-									htmlFor='A_H'
-									className={'w-2/1 flex items-center justify-center rounded-md border border-gray-200 bg-gray-200 text-black hover:bg-gray-300 '.concat(
-										cvss.A === 'H' ? 'text-red-700' : 'text-black'
-									)}
-									onClick={handleCVSS}
-									onKeyDown={handleCVSS}
-									role='button'
-									tabIndex='0'
-								>
-									High (H)
-								</div>
-							</div>
-						</div>
+						<CVSSComponent label='Availability (A)'>
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='A' value='N' label='None' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='A' value='L' label='Low' />
+							<CVSSOption cvss={cvss} setCvss={setCvss} name='A' value='H' label='High' />
+						</CVSSComponent>
 					</div>
 				</div>
 			</div>
