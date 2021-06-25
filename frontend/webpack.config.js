@@ -11,8 +11,8 @@ const imageminMozjpeg = require('imagemin-mozjpeg')
 const webpack = require('webpack')
 require('dotenv').config()
 
-module.exports = (env) => {
-	const port = env.port || 4000
+module.exports = () => {
+	const port = process.env.PORT || 4000
 
 	return {
 		mode: 'development',

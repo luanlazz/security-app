@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"start": "webpack-dev-server --env.port=4000 --open ",
+		"start": "webpack-dev-server --open ",
 		"build": "webpack --config ./webpack.config.prod.js"
 	},
 	"keywords": [],
