@@ -19,6 +19,16 @@
 		"no-underscore-dangle": "off",
 		"class-methods-use-this": "off",
 		"prefer-destructuring": ["error", { "object": true, "array": false }],
-		"no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val" }]
+		"no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val" }],
+    "jsx-a11y/label-has-associated-control": [ "error", {
+      "required": {
+        "some": [ "nesting", "id"  ]
+      }
+    }],
+    "jsx-a11y/label-has-for": [ "error", {
+      "required": {
+        "some": [ "nesting", "id"  ]
+      }
+    }]
 	}
 }
