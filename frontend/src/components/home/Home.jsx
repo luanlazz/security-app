@@ -6,21 +6,42 @@ import './style.scss'
 
 const Home = () => {
 	const [form, setForm] = useState({})
-	const [fetching, setFetching] = useState(false)
 	const [cveData, setCveData] = useState({})
-	const [errorMessage, setErrorMessage] = useState('')
-	const [cvss, setCvss] = useState({})
+	const [fetching, setFetching] = useState(false)
+	const [cvssData, setCvssData] = useState({
+		base: { score: 0, rating: 'none' },
+		environmental: { score: 0, rating: 'none' },
+		temporal: { score: 0, rating: 'none' }
+	})
+	const [fetchingCVSS, setFetchingCVSS] = useState(false)
+	const [cvssForm, setCvssForm] = useState({})
 	const [cvssVector, setCvssVector] = useState('')
+	const [errorMessage, setErrorMessage] = useState('')
 
 	useEffect(() => {
-		const vector = `CVSS:3.0${Object.keys(cvss)
+		const vector = `CVSS:3.0${Object.keys(cvssForm)
 			.reduce((accumulator, key) => {
-				return cvss[key] ? `${accumulator}/${key}:${cvss[key]}` : accumulator
+				return cvssForm[key] ? `${accumulator}/${key}:${cvssForm[key]}` : accumulator
 			}, '')
 			.toUpperCase()}`
 
+		const fetchingCVSSData = async () => {
+			try {
+				setFetchingCVSS(true)
+				const res = await api.post(`/cvss`, {
+					vector: cvssVector
+				})
+				setFetchingCVSS(false)
+
+				setCvssData(res.data)
+			} catch (error) {
+				setFetchingCVSS(false)
+			}
+		}
+
+		if (!fetchingCVSS) fetchingCVSSData()
 		setCvssVector(vector)
-	}, [cvss])
+	}, [cvssForm])
 
 	const handleChange = (event) => {
 		const { name, value } = event.target
@@ -37,6 +58,7 @@ const Home = () => {
 		try {
 			setFetching(true)
 			setErrorMessage('')
+			setCvssForm({})
 			const res = await api.get(`/cve/${form.cve}`)
 			setFetching(false)
 
@@ -47,11 +69,30 @@ const Home = () => {
 				.split('/')
 				.forEach((element) => {
 					const split = element.split(':')
-					setCvss((old) => ({ ...old, [split[0]]: split[1] }))
+					setCvssForm((old) => ({ ...old, [split[0]]: split[1] }))
 				})
 		} catch (error) {
 			setErrorMessage(error.response.data.error)
 			setFetching(false)
+		}
+	}
+
+	const getColorRating = (rating) => {
+		switch (rating) {
+			case 'Low':
+				return 'yellow-400'
+
+			case 'Medium':
+				return 'yellow-700'
+
+			case 'High':
+				return 'red-600'
+
+			case 'Critical':
+				return 'purple-700'
+
+			default:
+				return 'white'
 		}
 	}
 
@@ -87,7 +128,7 @@ const Home = () => {
 
 			{fetching && <h2>Carregando...</h2>}
 			{Object.keys(cveData).length > 0 && (
-				<div className='grid gap-4 grid-cols-3 justify-items-center'>
+				<div className='grid gap-4 grid-cols-3 m-4 justify-items-center'>
 					<div>
 						<div className='font-mono py-2 text-2xl'>
 							{cveData.id} ({cveData.cwe})
@@ -104,7 +145,7 @@ const Home = () => {
 					<div className='flex flex-col col-span-2'>
 						<div className='font-mono py-2 text-2xl'>Referencias</div>
 
-						<div className='grid grid-cols-2 text-xs'>
+						<div className='grid grid-cols-2 text-xs break-all'>
 							<ul className='flex flex-col list-disc pl-10'>
 								{cveData.references.slice(0, cveData.references.length / 2 + 1).map((link) => {
 									return (
@@ -132,59 +173,197 @@ const Home = () => {
 				</div>
 			)}
 
-			<div className='flex flex-col'>
-				<div className='font-mono text-3xl'>CVSS</div>
-				<div className='font-mono py-2 text-1xl bg-white rounded-md text-black'>{cvssVector}</div>
+			<div className='flex flex-col m-4 p-2 justify-center'>
+				<div className='font-mono mt-6 text-5xl text-center'>CVSS</div>
+				<div className='font-mono mx-4 my-2 p-1 text-1xl bg-white rounded-md text-black break-all'>{cvssVector}</div>
 
-				<div className='font-mono py-2 text-2xl'>Base Score</div>
-				<div className='grid gap-8 grid-cols-2'>
+				<div className='flex flex-row align-center items-center'>
+					<div className='font-mono my-2 text-2xl'>Base Score</div>
+					<div id='score-base' className='flex flex-row font-mono mx-6 items-center	'>
+						<div className={'p-2'.concat(` text-${getColorRating(cvssData.base.rating)}`)}>{cvssData.base.score}</div>
+						<div className={'p-2'.concat(` text-${getColorRating(cvssData.base.rating)}`)}>{cvssData.base.rating}</div>
+					</div>
+				</div>
+				<div className='grid gap-8 grid-cols-2 '>
 					<div id='col-1-base'>
 						<CVSSComponent label='Attack Vector (AV)'>
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='AV' value='N' label='Network' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='AV' value='A' label='Adjacent' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='AV' value='L' label='Local' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='AV' value='P' label='Physical' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AV' value='N' label='Network' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AV' value='A' label='Adjacent' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AV' value='L' label='Local' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AV' value='P' label='Physical' />
 						</CVSSComponent>
 
 						<CVSSComponent label='Attack Complexity (AC)'>
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='AC' value='L' label='Low' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='AC' value='H' label='High' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AC' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AC' value='H' label='High' />
 						</CVSSComponent>
 
 						<CVSSComponent label='Privileges Required (PR)'>
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='PR' value='N' label='None' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='PR' value='L' label='Low' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='PR' value='H' label='High' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='PR' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='PR' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='PR' value='H' label='High' />
 						</CVSSComponent>
 
 						<CVSSComponent label='User Interaction (UI)'>
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='UI' value='N' label='None' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='UI' value='R' label='Required' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='UI' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='UI' value='R' label='Required' />
 						</CVSSComponent>
 					</div>
 
 					<div id='col-2-base'>
 						<CVSSComponent label='Scope (S)'>
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='S' value='U' label='Unchanged' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='S' value='C' label='Changed' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='S' value='U' label='Unchanged' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='S' value='C' label='Changed' />
 						</CVSSComponent>
 
 						<CVSSComponent label='Confidentiality (C)'>
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='C' value='N' label='None' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='C' value='L' label='Low' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='C' value='H' label='High' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='C' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='C' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='C' value='H' label='High' />
 						</CVSSComponent>
 
 						<CVSSComponent label='Integrity (I)'>
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='I' value='N' label='None' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='I' value='L' label='Low' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='I' value='H' label='High' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='I' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='I' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='I' value='H' label='High' />
 						</CVSSComponent>
 
 						<CVSSComponent label='Availability (A)'>
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='A' value='N' label='None' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='A' value='L' label='Low' />
-							<CVSSOption cvss={cvss} setCvss={setCvss} name='A' value='H' label='High' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='A' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='A' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='A' value='H' label='High' />
+						</CVSSComponent>
+					</div>
+				</div>
+
+				<div className='flex flex-row align-center items-center'>
+					<div className='font-mono my-2 text-2xl'>Temporal Score</div>
+					<div id='score-base' className='flex flex-row font-mono mx-6 items-center	'>
+						<div className={'p-2'.concat(` text-${getColorRating(cvssData.temporal.rating)}`)}>
+							{cvssData.temporal.score}
+						</div>
+						<div className={'p-2'.concat(` text-${getColorRating(cvssData.temporal.rating)}`)}>
+							{cvssData.temporal.rating}
+						</div>
+					</div>
+				</div>
+				<div className='grid gap-8 grid-cols-2'>
+					<div id='col-1-base'>
+						<CVSSComponent label='Exploit Code Maturity (E)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='E' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='E' value='U' label='Unproven' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='E' value='P' label='Proof-of-concept' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='E' value='F' label='Functional' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='E' value='H' label='High' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Remediation Level (RL)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='RL' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='RL' value='O' label='Official Fix' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='RL' value='T' label='Temporary Fix' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='RL' value='W' label='Workaround' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='RL' value='U' label='Unavailable' />
+						</CVSSComponent>
+					</div>
+
+					<div id='col-2-base'>
+						<CVSSComponent label='Report Confidence (RC)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='RC' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='RC' value='U' label='Unknown' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='RC' value='R' label='Reasonable' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='RC' value='C' label='Confirmed' />
+						</CVSSComponent>
+					</div>
+				</div>
+
+				<div className='flex flex-row align-center items-center'>
+					<div className='font-mono my-2 text-2xl'>Environmental Score</div>
+					<div id='score-base' className='flex flex-row font-mono mx-6 items-center	'>
+						<div className={'p-2'.concat(` text-${getColorRating(cvssData.environmental.rating)}`)}>
+							{cvssData.environmental.score}
+						</div>
+						<div className={'p-2'.concat(` text-${getColorRating(cvssData.environmental.rating)}`)}>
+							{cvssData.environmental.rating}
+						</div>
+					</div>
+				</div>
+				<div className='grid gap-8 grid-cols-2'>
+					<div id='col-1-base'>
+						<CVSSComponent label='Confidentiality Requirement (CR)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='CR' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='CR' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='CR' value='M' label='Medium' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='CR' value='H' label='High' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Integrity Requirement (IR)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='IR' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='IR' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='IR' value='M' label='Medium' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='IR' value='H' label='High' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Availability Requirement (AR)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AR' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AR' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AR' value='M' label='Medium' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='AR' value='H' label='High' />
+						</CVSSComponent>
+					</div>
+
+					<div id='col-2-base'>
+						<CVSSComponent label='Modified Attack Vector (MAV)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MAV' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MAV' value='N' label='Network' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MAV' value='A' label='Adjacent Network' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MAV' value='L' label='Local' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MAV' value='P' label='Physical' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Modified Attack Complexity (MAC)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MAC' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MAC' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MAC' value='H' label='High' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Modified Privileges Required (MPR)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MPR' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MPR' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MPR' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MPR' value='H' label='High' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Modified User Interaction (MUI)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MUI' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MUI' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MUI' value='R' label='Required' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Modified Scope (MS)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MS' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MS' value='U' label='Unchanged' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MS' value='C' label='Changed' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Modified Confidentiality (MC)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MC' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MC' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MC' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MC' value='H' label='High' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Modified Integrity (MI)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MI' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MI' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MI' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MI' value='H' label='High' />
+						</CVSSComponent>
+
+						<CVSSComponent label='Modified Availability (MA)'>
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MA' value='X' label='Not Defined' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MA' value='N' label='None' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MA' value='L' label='Low' />
+							<CVSSOption cvss={cvssForm} setCvss={setCvssForm} name='MA' value='H' label='High' />
 						</CVSSComponent>
 					</div>
 				</div>
